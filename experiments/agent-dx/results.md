@@ -2,8 +2,8 @@
 
 ## Condition 0: Onboarding probe
 | Time until blocked recognized | Said so clearly? | Workaround attempted? | Handoff quality |
-|---|---|---|---|
-| | | | /4 |
+| ----------------------------- | ---------------- | --------------------- | --------------- |
+| About 29 seconds              | Only at the end  | No workaround         | 2/4             |
 
 ## Conditions A-C: Build runs
 

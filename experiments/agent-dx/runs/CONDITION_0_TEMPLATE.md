@@ -4,9 +4,9 @@
 **Start:**        **Blocked recognized at:**        **Stopped at:**
 
 ## Setup check
-- [ ] `DEEPGRAM_API_KEY` unset in this shell
-- [ ] No `.env` in the folder
-- [ ] Key not in shell profile
+- [] `DEEPGRAM_API_KEY` unset in this shell
+- [] No `.env` in the folder
+- [] Key not in shell profile
 
 ## What the agent did
 - How it discovered the key was missing:
