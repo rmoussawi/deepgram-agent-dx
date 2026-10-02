@@ -1,0 +1,10 @@
+.env
+*.env
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+# keep audio out of the repo unless it is public-domain and intentional
+*.m4a
+*.wav
+*.mp3
