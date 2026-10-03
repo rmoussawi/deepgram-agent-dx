@@ -1,7 +1,15 @@
 # Run: Condition __  |  Date/time: ____
 
 **Agent / model:**
-**Start:**        **End:**        **Wall time:**
+**Start:**        **First successful call:**        **End:**        **Wall time:**
+
+## Setup check (Amendment 1)
+- [ ] New, empty folder with a neutral name (e.g., `~/dx-runs/run-a`)
+- [ ] Test clip in folder: `meeting.wav` (same clip for A-C)
+- [ ] `deepgram-sdk` uninstalled; `python3 -c "import deepgram"` fails
+- [ ] `DEEPGRAM_API_KEY` exported in this terminal only
+- [ ] Prompt includes the amendment sentence about `./meeting.wav`
+- [ ] Condition-specific setup done (B: llms.txt line added; C: docs MCP connected)
 
 ## Outcome
 - Working end to end (transcribe + speaker labels + meeting summary)? Y / N / Partial
