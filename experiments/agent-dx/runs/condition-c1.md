@@ -1,8 +1,6 @@
 # Run: Condition C, attempt 1 (Docs MCP)  |  Date: 2026-10-03 (US Eastern)
 
-> **Status: condition not administered.** The Deepgram docs MCP server returned errors on both calls,
-> so the agent fell back to fetching docs pages directly. This run measures **recovery from an
-> agent-facing docs outage**, not the effect of the MCP server. See "Rerun" below.
+> **Status: condition not administered.** The Deepgram docs MCP server returned errors on both calls, so the agent fell back to fetching docs pages directly. This run measures **recovery from an agent-facing docs outage**, not the effect of the MCP server. See "Rerun" below.
 
 **Agent / model:** Claude Code CLI, Claude Sonnet 5.5
 **Start:** 12:17:20 UTC (8:17:20 AM ET)    **First successful call:** 12:18:09 UTC    **End:** 12:18:35 UTC
@@ -21,7 +19,8 @@
 - Working end to end (transcribe + speaker labels + meeting summary)? **Y** (confirmed by my own run with the key set)
 - Human interventions: 0
 - Errors hit and retries: **2 MCP errors** (`searchDocs` returned "Search failed: Failed to fetch from FAI chat service" twice).
-  0 Deepgram API errors. 1 output fix: the summarizer read "Speaker 1" as a dog's name, so the agent relabeled speakers as A/B in the text sent for summarizing, and re-ran.
+  0 Deepgram API errors. 1 output fix: the summarizer read "Speaker 1" as a dog's name, so the agent relabeled
+  speakers as A/B in the text sent for summarizing, and re-ran.
 
 ## Timeline
 | Time (UTC) | Elapsed | Event |
@@ -59,8 +58,9 @@
 | | **Score** | **5/5** | |
 
 ## Where it went wrong
-- **The docs MCP server was down.** Both calls returned an explicit error. Credit to the server: the error was clear, and the agent recovered immediately. Contrast with Condition B's silent failure.
-- **Without search, discovery degraded.** It guessed page URLs, never found the Summarization page, and told the developer that Deepgram documents summarization "only on the text endpoint." The README repeats this. This is false because:`summarize=v2` on `/v1/listen` exists and worked in Condition A.
+- **The docs MCP server was down.** Both calls returned an explicit error. Credit to the server: the error was clear, and the agent recovered immediately.
+- **Without search, discovery degraded.** It guessed page URLs, never found the Summarization page, and told the developer that Deepgram documents summarization "only on the text endpoint." The README repeats this. This is false as:
+  `summarize=v2` on `/v1/listen` exists and worked in Condition A.
 - **Summarizer sensitive to input format.** Sending "Speaker 1:" lines to `/v1/read` produced a summary about a dog named Speaker 1. The agent caught it and worked around it.
 
 ## Rerun
@@ -79,7 +79,11 @@ Each check uses a separate scratch session (not a run folder), the same server U
 C2 goes ahead only after a check succeeds.
 
 ## Notes for the memo
+
 - **Agents will use an MCP server unprompted.** No hint in the prompt; it went to `searchDocs` first.
+
 - **Agent-facing infrastructure is now production infrastructure.** When the docs MCP server failed, the agent's path to the docs got worse, and it passed a false claim to the developer.
-- **Explicit errors beat silent success.** This failure was loud, and the agent adapted in seconds.
-- **Two runs, two different reasons, same detour.** B (silent failure) and C1 (discovery failure) both ended up summarizing via `/v1/read` instead of `/v1/listen`, and both wrote an inaccurate claim about Deepgram into the README.
+
+- **Explicit errors work.** This failure was loud, and the agent adapted in seconds.
+
+- **Two runs, two different reasons, same detour.** B (misread response) and C1 (discovery failure) both ended up summarizing via `/v1/read` instead of `/v1/listen`, and both wrote an inaccurate claim about Deepgram into the README.
