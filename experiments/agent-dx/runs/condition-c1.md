@@ -1,6 +1,8 @@
 # Run: Condition C, attempt 1 (Docs MCP)  |  Date: 2026-10-03 (US Eastern)
 
-> **Status: condition not administered.** The Deepgram docs MCP server returned errors on both calls, so the agent fell back to fetching docs pages directly. This run measures **recovery from an agent-facing docs outage**, not the effect of the MCP server. See "Rerun" below.
+> **Status: condition not administered.** The Deepgram docs MCP server returned errors on both calls,
+> so the agent fell back to fetching docs pages directly. This run measures **recovery from an
+> agent-facing docs outage**, not the effect of the MCP server. See "Rerun" below.
 
 **Agent / model:** Claude Code CLI, Claude Sonnet 5.5
 **Start:** 12:17:20 UTC (8:17:20 AM ET)    **First successful call:** 12:18:09 UTC    **End:** 12:18:35 UTC
@@ -18,9 +20,7 @@
 ## Outcome
 - Working end to end (transcribe + speaker labels + meeting summary)? **Y** (confirmed by my own run with the key set)
 - Human interventions: 0
-- Errors hit and retries: **2 MCP errors** (`searchDocs` returned "Search failed: Failed to fetch from FAI chat service" twice).
-  0 Deepgram API errors. 1 output fix: the summarizer read "Speaker 1" as a dog's name, so the agent relabeled
-  speakers as A/B in the text sent for summarizing, and re-ran.
+- Errors hit and retries: **2 MCP errors** (`searchDocs` returned "Search failed: Failed to fetch from FAI chat service" twice). 0 Deepgram API errors. 1 output fix: the summarizer read "Speaker 1" as a dog's name, so the agent relabeled speakers as A/B in the text sent for summarizing, and re-ran.
 
 ## Timeline
 | Time (UTC) | Elapsed | Event |
@@ -68,7 +68,8 @@ The protocol's Condition C (MCP-assisted) was not administered because of a serv
 This run is kept as recorded evidence.
 
 ### Server health checks
-Each check uses a separate scratch session (not a run folder), the same server URL, and a neutral query ("pricing") so the check can't influence the experiment.
+Each check uses a separate scratch session (not a run folder), the same server URL, and a neutral query
+("pricing") so the check can't influence the experiment.
 
 | Date / time (ET) | Result | Error |
 |---|---|---|
@@ -78,12 +79,16 @@ Each check uses a separate scratch session (not a run folder), the same server U
 
 C2 goes ahead only after a check succeeds.
 
+### Where the failure is
+Opening the server address in a browser (2026-10-03) returns a valid description of the server:
+`fern-docs-mcp-server`, version 1.0.0, offering one read-only tool, `searchDocs`, with setup instructions that match the Claude Code command used in this run. So the server itself responds; **its search backend is what fails** ("Failed to fetch from FAI chat service").
+
+- **It looks healthy from the outside.** The server description loads, and `claude mcp list` reported "connected" each time. Neither runs a search, so neither detects this outage. Only a real query does.
+- **It's provided by Deepgram's docs platform.** The server name indicates Fern, the platform behind Deepgram's documentation site. "FAI" is likely Fern's AI search service (an inference from the name). Deepgram's agent docs experience depends on that service.
+- **The setup was correct.** The server's own Claude Code instructions use the same address and transport as this run, so the configuration wasn't the cause.
+
 ## Notes for the memo
-
 - **Agents will use an MCP server unprompted.** No hint in the prompt; it went to `searchDocs` first.
-
 - **Agent-facing infrastructure is now production infrastructure.** When the docs MCP server failed, the agent's path to the docs got worse, and it passed a false claim to the developer.
-
 - **Explicit errors work.** This failure was loud, and the agent adapted in seconds.
-
 - **Two runs, two different reasons, same detour.** B (misread response) and C1 (discovery failure) both ended up summarizing via `/v1/read` instead of `/v1/listen`, and both wrote an inaccurate claim about Deepgram into the README.

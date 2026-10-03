@@ -8,12 +8,13 @@ New to these tables? See [How to read these tables](#how-to-read-these-tables) a
 | 29s (only in its final step, after building) | Yes, in its final message | No | 2/4 |
 
 ## Conditions A-C: Build runs
-| Condition                                   | Success | Wall time | Time to first successful call | Human interventions | Errors / retries                                        | Deprecated API or model used?    | Summarization via                       | Integration quality |
-| ------------------------------------------- | ------- | --------- | ----------------------------- | ------------------- | ------------------------------------------------------- | -------------------------------- | --------------------------------------- | ------------------- |
-| A: Baseline                                 | Y       | 37s       | 12s                           | 0                   | 0                                                       | Yes: `diarize=true` (deprecated) | Deepgram (`summarize=v2` on `/listen`)  | 4/5                 |
-| B: llms.txt                                 | Y       | 70s       | 29s                           | 0                   | 0 errors; 1 misread response (missed `results.summary`) | No                               | Deepgram (`/v1/read` Text Intelligence) | 5/5                 |
-| C1: Docs MCP (not administered: MCP outage) | Y       | 75s       | 49s                           | 0                   | 2 MCP errors (docs search down); 0 API errors           | No                               | Deepgram (`/v1/read` Text Intelligence) | 5/5                 |
-| C2: Docs MCP (rerun)                        |         |           |                               |                     |                                                         |                                  |                                         | /5                  |
+| Condition | Success | Wall time | Time to first successful call | Human interventions | Errors / retries | Deprecated API or model used? | Summarization via | Integration quality |
+|---|---|---|---|---|---|---|---|---|
+| A: Baseline | Y | 37s | 12s | 0 | 0 | Yes: `diarize=true` (deprecated) | Deepgram (`summarize=v2` on `/listen`) | 4/5 |
+| B: llms.txt | Y | 70s | 29s | 0 | 0 errors; 1 misread response (missed `results.summary`) | No | Deepgram (`/v1/read` Text Intelligence) | 5/5 |
+| C1: Docs MCP (not administered: MCP outage) | Y | 75s | 49s | 0 | 2 MCP errors (docs search down); 0 API errors | No | Deepgram (`/v1/read` Text Intelligence) | 5/5 |
+| C2: Docs MCP (rerun) | | | | | | | | /5 |
+| C-alt: Alternate docs MCP (Amendment 2) | | | | | | | | /5 |
 
 ## Output comparison: A vs. B (same clip, same model)
 Not scored; recorded because it connects integration choices to what the developer sees.
@@ -26,10 +27,10 @@ Not scored; recorded because it connects integration choices to what the develop
 
 **Why it matters:** the developer in Condition A would see weaker speaker labels and could reasonably judge Deepgram's diarization by them, without knowing a better diarizer was one parameter away.
 
-C1 is shown for completeness but isn't a valid Condition C result: the docs MCP server failed on every call,so the agent fell back to fetching pages directly. See `runs/condition-c1.md`.
+C1 is shown for completeness but isn't a valid Condition C result: the docs MCP server failed on every call, so the agent fell back to fetching pages directly. See `runs/condition-c1.md`.
 
 ## Takeaways
-<!-- Fill in after Conditions B and C. -->
+To be added after Condition C-alt (see Amendment 2 in [`PROTOCOL.md`](PROTOCOL.md)).
 
 ## How to read these tables
 All times come from the Claude Code session logs and are measured from the moment the prompt was submitted.
@@ -62,8 +63,7 @@ The same task and prompt, with a key, under different documentation setups:
 | Integration quality (x/5) | Whether the agent used Deepgram correctly, scored with the five-point checklist in [`PROTOCOL.md`](PROTOCOL.md): current model, working speaker labels, current API patterns, Deepgram's own features, and a clear missing-key error. It does not grade how good the summary reads | A: 4/5, losing a point for the deprecated diarization parameter |
 
 ### Terms used in the tables
-- **Not administered:** the condition couldn't be applied as designed, so the run isn't a valid result for it.
-  C1 is marked this way because the docs MCP server was down for every call.
+- **Not administered:** the condition couldn't be applied as designed, so the run isn't a valid result for it.  C1 is marked this way because the docs MCP server was down for every call.
 - **Misread response:** the API returned what was requested, but the agent looked in the wrong place and concluded it was missing. Example: in B, the summary was under `results.summary`; the agent checked the top level.
 - **Diarization:** labeling who spoke when (Speaker 0, Speaker 1, ...).
 - **`/v1/listen` and `/v1/read`:** Deepgram's endpoints for audio (transcription, plus features like summarization) and for text analysis (summarizing text you send it).
