@@ -12,8 +12,7 @@
 | 2026-10-01 23:05 ET | Agent | Docs fetch (via agent's summarizing fetch tool)                                                   | Agent reported the *supported* model as the *recommended* one; ambiguous wording gets distorted further when summarized                                                            | Observation | Unambiguous, plain statements of defaults and compatibility                                                            |
 
 ## Earlier website walkthrough (from memory)
-<!-- Brain-dump the issues you hit before the interview prep started. Mark these "from memory". -->
-
+TBD
 ## Milestones
 | Milestone | Timestamp | Elapsed |
 |---|---|---|
