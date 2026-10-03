@@ -36,7 +36,7 @@ and that likely shaped its choice of raw HTTP over the SDK. Keep the environment
 - First Deepgram source consulted: **none.** No web search, no docs pages fetched.
 - Doc pages / URLs fetched: none.
 - SDK or raw HTTP? **Raw HTTP** (`requests`), after confirming no Deepgram SDK was installed.
-- Models / endpoints chosen: `nova-3` on `/v1/listen`. Current.
+- Models / endpoints chosen: `nova-3` on `/v1/listen` (current), with the **deprecated** `diarize=true` parameter.
 - Summarization: **Deepgram's own** (`summarize=v2`).
 
 ## Integration quality
@@ -44,26 +44,19 @@ and that likely shaped its choice of raw HTTP over the SDK. Keep the environment
 |---|---|---|---|
 | 1 | Current STT model | Yes | `nova-3`, listed as current on https://developers.deepgram.com/docs/models |
 | 2 | Diarization on and working | Yes | `diarize=true`; output separated 2 speakers. Some short replies attributed to the wrong speaker (agent noted this) |
-| 3 | Current SDK/API patterns | Yes | `/v1/listen` with `Authorization: Token` header, current REST pattern |
+| 3 | Current SDK/API patterns | No | Used `diarize=true`, which the Diarization page marks deprecated: it is pinned to the v1 diarizer, and the page says to switch to `diarize_model` (`latest` for most cases). Verified on https://developers.deepgram.com/docs/diarization. REST endpoint and auth pattern were otherwise current |
 | 4 | Uses Deepgram's own features | Yes | `summarize=v2`, no separate LLM |
 | 5 | Clear API key error handling | Yes | Confirmed by my own run with the key unset: printed "DEEPGRAM_API_KEY is not set." |
-| | **Score** | **5/5** | |
+| | **Score** | **4/5** | |
 
 ## Where it went wrong
-Nothing in the integration. Quality issues were in the output, not the code: "Sassafras" was transcribed
-as "Sashfak," which carried into the summary, and a few short replies were assigned to the wrong speaker.
+One integration issue: the deprecated `diarize=true` parameter (scored under item 3). Other quality issues were in the output, not the code: "Sassafras" was transcribed as "Sashfak," which carried into the summary, and a few short replies were assigned to the wrong speaker.
 Summary prose quality is out of scope for scoring (see protocol).
 
 ## Notes for the memo
-- **The docs were never consulted.** A frontier model with a recent knowledge cutoff completed the task in
-  37 seconds from prior knowledge alone. For a common use case of a well-known API, the agent experience is
-  set by what the model already knows, not by the docs. This creates a ceiling effect for B and C.
-- **It verified before building.** It tested the API with `curl` first, then wrote the tool. The opposite of
-  Condition 0's defer behavior, because a key was available.
+- **The docs were never consulted.** The agent completed the task in 37 seconds from prior knowledge alone, and it worked. But it used a deprecated parameter (`diarize=true`) without knowing it. Fast and working is not the same as current: prior knowledge goes stale silently.
+- **It verified before building.** It tested the API with `curl` first, then wrote the tool. The opposite of Condition 0's defer behavior, because a key was available.
 - **Answers the Condition 0 compatibility question:** `nova-3` with `summarize=v2` returned a successful summary.
   The Summarization page's "Nova" wording is a docs clarity issue, not a product limitation.
-- **The agent evaluated the product for the developer.** It called Deepgram's summarizer "fairly literal" and
-  suggested sending the transcript to Claude instead. Agents don't just integrate; they recommend, and can steer
-  developers away from a feature.
-- **No SDK.** With the SDK absent and `requests` present, it went straight to the REST API. The SDK was neither
-  needed nor discovered.
+- **The agent evaluated the product for the developer.** It called Deepgram's summarizer "fairly literal" and suggested sending the transcript to Claude instead. Agents don't just integrate; they recommend, and can steer developers away from a feature.
+- **No SDK.** With the SDK absent and `requests` present, it went straight to the REST API. The SDK was neither needed nor discovered.
