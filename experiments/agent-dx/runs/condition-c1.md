@@ -1,6 +1,8 @@
 # Run: Condition C, attempt 1 (Docs MCP)  |  Date: 2026-10-03 (US Eastern)
 
-> **Status: condition not administered.** The Deepgram docs MCP server returned errors on both calls, so the agent fell back to fetching docs pages directly. This run measures **recovery from an agent-facing docs outage**, not the effect of the MCP server. See "Rerun" below.
+> **Status: condition not administered.** The Deepgram docs MCP server returned errors on both calls,
+> so the agent fell back to fetching docs pages directly. This run measures **recovery from an
+> agent-facing docs outage**, not the effect of the MCP server. See "Rerun" below.
 
 **Agent / model:** Claude Code CLI, Claude Sonnet 5.5
 **Start:** 12:17:20 UTC (8:17:20 AM ET)    **First successful call:** 12:18:09 UTC    **End:** 12:18:35 UTC
@@ -19,8 +21,7 @@
 - Working end to end (transcribe + speaker labels + meeting summary)? **Y** (confirmed by my own run with the key set)
 - Human interventions: 0
 - Errors hit and retries: **2 MCP errors** (`searchDocs` returned "Search failed: Failed to fetch from FAI chat service" twice).
-  0 Deepgram API errors. 1 output fix: the summarizer read "Speaker 1" as a dog's name, so the agent relabeled
-  speakers as A/B in the text sent for summarizing, and re-ran.
+  0 Deepgram API errors. 1 output fix: the summarizer read "Speaker 1" as a dog's name, so the agent relabeled speakers as A/B in the text sent for summarizing, and re-ran.
 
 ## Timeline
 | Time (UTC) | Elapsed | Event |
@@ -59,8 +60,7 @@
 
 ## Where it went wrong
 - **The docs MCP server was down.** Both calls returned an explicit error. Credit to the server: the error was clear, and the agent recovered immediately. Contrast with Condition B's silent failure.
-- **Without search, discovery degraded.** It guessed page URLs, never found the Summarization page, and told the developer that Deepgram documents summarization "only on the text endpoint." The README repeats this. This is a False claim as 
-  `summarize=v2` on `/v1/listen` exists and worked in Condition A.
+- **Without search, discovery degraded.** It guessed page URLs, never found the Summarization page, and told the developer that Deepgram documents summarization "only on the text endpoint." The README repeats this. This is false because:`summarize=v2` on `/v1/listen` exists and worked in Condition A.
 - **Summarizer sensitive to input format.** Sending "Speaker 1:" lines to `/v1/read` produced a summary about a dog named Speaker 1. The agent caught it and worked around it.
 
 ## Rerun
@@ -74,6 +74,7 @@ Each check uses a separate scratch session (not a run folder), the same server U
 |---|---|---|
 | 2026-10-03, 8:17 AM | Failed (during the run) | `Search failed: {"error":"Failed to fetch from FAI chat service"}` |
 | 2026-10-03, 8:45 AM | Failed (health check 1; searchDocs call at 12:45:26 UTC) | `Search failed: {"error":"Failed to fetch from FAI chat service"}` |
+| 2026-10-03, 12:33 PM | Failed (health check 2; searchDocs call at 16:33:43 UTC) | `Search failed: {"error":"Failed to fetch from FAI chat service"}` |
 
 C2 goes ahead only after a check succeeds.
 
