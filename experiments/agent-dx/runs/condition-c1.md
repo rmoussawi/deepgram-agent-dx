@@ -1,8 +1,6 @@
 # Run: Condition C, attempt 1 (Docs MCP)  |  Date: 2026-10-03 (US Eastern)
 
-> **Status: condition not administered.** The Deepgram docs MCP server returned errors on both calls,
-> so the agent fell back to fetching docs pages directly. This run measures **recovery from an
-> agent-facing docs outage**, not the effect of the MCP server. See "Rerun" below.
+> **Status: condition not administered.** The Deepgram docs MCP server returned errors on both calls, so the agent fell back to fetching docs pages directly. This run measures **recovery from an agent-facing docs outage**, not the effect of the MCP server. See "Rerun" below.
 
 **Agent / model:** Claude Code CLI, Claude Sonnet 5.5
 **Start:** 12:17:20 UTC (8:17:20 AM ET)    **First successful call:** 12:18:09 UTC    **End:** 12:18:35 UTC
@@ -44,8 +42,7 @@
   **Never reached the Summarization page.**
 - SDK or raw HTTP? Raw HTTP, Python standard library only.
 - Models / endpoints chosen: `nova-3` on `/v1/listen` with `diarize_model=latest`; `/v1/read` for the summary.
-- Summarization: Deepgram, via Text Intelligence (`/v1/read`). It concluded summarization exists only for text,
-  because the Text Intelligence page it guessed covers only `/v1/read`.
+- Summarization: Deepgram, via Text Intelligence (`/v1/read`). It concluded summarization exists only for text, because the Text Intelligence page it guessed covers only `/v1/read`.
 
 ## Integration quality
 | # | Check | Pass? | Evidence |
@@ -64,12 +61,10 @@
 - **Summarizer sensitive to input format.** Sending "Speaker 1:" lines to `/v1/read` produced a summary about a dog named Speaker 1. The agent caught it and worked around it.
 
 ## Rerun
-The protocol's Condition C (MCP-assisted) was not administered because of a server-side failure, not because of the result. A second attempt (`condition-c2.md`) uses the identical setup once the server is confirmed healthy.
-This run is kept as recorded evidence.
+The protocol's Condition C (MCP-assisted) was not administered because of a server-side failure, not because of the result. This run is kept as recorded evidence. A rerun was planned once the server recovered. It wasn't run because the server's search was still failing at the last health check (below). Instead, Amendment 2 added Condition C-alt, which tests Deepgram's other documented docs MCP server. See `runs/condition-c-alt.md`.
 
 ### Server health checks
-Each check uses a separate scratch session (not a run folder), the same server URL, and a neutral query
-("pricing") so the check can't influence the experiment.
+Each check uses a separate scratch session (not a run folder), the same server URL, and a neutral query ("pricing") so the check can't influence the experiment.
 
 | Date / time (ET) | Result | Error |
 |---|---|---|
@@ -77,7 +72,7 @@ Each check uses a separate scratch session (not a run folder), the same server U
 | 2026-10-03, 8:45 AM | Failed (health check 1; searchDocs call at 12:45:26 UTC) | `Search failed: {"error":"Failed to fetch from FAI chat service"}` |
 | 2026-10-03, 12:33 PM | Failed (health check 2; searchDocs call at 16:33:43 UTC) | `Search failed: {"error":"Failed to fetch from FAI chat service"}` |
 
-C2 goes ahead only after a check succeeds.
+No check succeeded, so the rerun didn't go ahead.
 
 ### Where the failure is
 Opening the server address in a browser (2026-10-03) returns a valid description of the server:
