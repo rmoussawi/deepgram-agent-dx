@@ -18,15 +18,17 @@ New to these tables? See [How to read these tables](#how-to-read-these-tables) a
 ## Output comparison: A vs. B (same clip, same model)
 Not scored; recorded because it connects integration choices to what the developer sees.
 
-- **Transcription:** word-for-word the same, including the same errors ("Sashfak," "Sassafrac" for sassafras).
-  Expected: both used `nova-3`.
+- **Transcription:** word-for-word the same, including the same errors ("Sashfak," "Sassafrac" for sassafras).  Expected: both used `nova-3`.
+
 - **Speaker attribution:** clearly better in B. A (deprecated `diarize=true`, v1 diarizer) put several replies under the wrong speaker: "Oh yeah," "Well, boil it and you drink it," and "Did that help you?" all landed in the wrong turn, and a stray "Back" ended Speaker 0's opening question. B (`diarize_model=latest`, v2 diarizer) split those correctly, with one mid-sentence split at [01:16].
   - *Caveat:* B's code also absorbs one-word speaker flips. That can't explain most of the difference, since A's errors are mostly multi-word, but the two effects aren't fully separated. One clip only.
+
 - **Summaries:** both short and imprecise. B's summary, made by sending the labelled transcript to `/v1/read`, reversed who asked the opening question. Summary quality is out of scope for scoring.
 
 **Why it matters:** the developer in Condition A would see weaker speaker labels and could reasonably judge Deepgram's diarization by them, without knowing a better diarizer was one parameter away.
 
-C1 is shown for completeness but isn't a valid Condition C result: the docs MCP server failed on every call, so the agent fell back to fetching pages directly. See `runs/condition-c1.md`. Condition C was not re-run: the server's search was still failing at the last check (12:33 PM ET on 2026-10-03). Instead, C-alt tested Deepgram's other documented docs MCP server (Amendment 2 in `PROTOCOL.md`). C-alt is reported separately and doesn't replace Condition C.
+C1 is shown for completeness but isn't a valid Condition C result: the docs MCP server failed on every call, so the agent fell back to fetching pages directly. See `runs/condition-c1.md`. Condition C was not re-run: the server's search was still failing at the last check (12:50 PM ET on 2026-10-04). Instead, C-alt tested Deepgram's other documented docs MCP server (Amendment 2 in `PROTOCOL.md`). C-alt is reported separately and doesn't replace
+Condition C.
 
 ## Takeaways
 To be added after Condition C-alt (see Amendment 2 in [`PROTOCOL.md`](PROTOCOL.md)).
@@ -62,9 +64,11 @@ The same task and prompt, with a key, under different documentation setups:
 | Integration quality (x/5) | Whether the agent used Deepgram correctly, scored with the five-point checklist in [`PROTOCOL.md`](PROTOCOL.md): current model, working speaker labels, current API patterns, Deepgram's own features, and a clear missing-key error. It does not grade how good the summary reads | A: 4/5, losing a point for the deprecated diarization parameter |
 
 ### Terms used in the tables
-- **Not administered:** the condition couldn't be applied as designed, so the run isn't a valid result for it.
-  C1 is marked this way because the docs MCP server was down for every call.
+- **Not administered:** the condition couldn't be applied as designed, so the run isn't a valid result for it. C1 is marked this way because the docs MCP server was down for every call.
+
 - **Misread response:** the API returned what was requested, but the agent looked in the wrong place and concluded it was missing. Example: in B, the summary was under `results.summary`; the agent checked the top level.
+
 - **Diarization:** labeling who spoke when (Speaker 0, Speaker 1, ...).
+
 - **`/v1/listen` and `/v1/read`:** Deepgram's endpoints for audio (transcription, plus features like summarization) and for text analysis (summarizing text you send it).
 

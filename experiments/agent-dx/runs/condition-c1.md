@@ -18,7 +18,7 @@
 ## Outcome
 - Working end to end (transcribe + speaker labels + meeting summary)? **Y** (confirmed by my own run with the key set)
 - Human interventions: 0
-- Errors hit and retries: **2 MCP errors** (`searchDocs` returned "Search failed: Failed to fetch from FAI chat service" twice). 0 Deepgram API errors. 1 output fix: the summarizer read "Speaker 1" as a dog's name, so the agent relabeled speakers as A/B in the text sent for summarizing, and re-ran.
+- Errors hit and retries: **2 MCP errors** (`searchDocs` returned "Search failed: Failed to fetch from FAI chat service" twice).  0 Deepgram API errors. 1 output fix: the summarizer read "Speaker 1" as a dog's name, so the agent relabeled speakers as A/B in the text sent for summarizing, and re-ran.
 
 ## Timeline
 | Time (UTC) | Elapsed | Event |
@@ -38,8 +38,7 @@
 ## Discovery
 - **Did the agent use the MCP server unprompted?** Yes. It loaded `searchDocs` as its very first docs step.
 - First Deepgram source consulted: docs MCP `searchDocs` (failed), then `/docs/models-languages-overview`
-- Doc pages fetched: Models overview, Text Intelligence (twice), Diarization. HTML pages, not `.md`; no `llms.txt`.
-  **Never reached the Summarization page.**
+- Doc pages fetched: Models overview, Text Intelligence (twice), Diarization. HTML pages, not `.md`; no `llms.txt`.  **Never reached the Summarization page.**
 - SDK or raw HTTP? Raw HTTP, Python standard library only.
 - Models / endpoints chosen: `nova-3` on `/v1/listen` with `diarize_model=latest`; `/v1/read` for the summary.
 - Summarization: Deepgram, via Text Intelligence (`/v1/read`). It concluded summarization exists only for text, because the Text Intelligence page it guessed covers only `/v1/read`.
@@ -56,12 +55,15 @@
 
 ## Where it went wrong
 - **The docs MCP server was down.** Both calls returned an explicit error. Credit to the server: the error was clear, and the agent recovered immediately.
-- **Without search, discovery degraded.** It guessed page URLs, never found the Summarization page, and told the developer that Deepgram documents summarization "only on the text endpoint." The README repeats this. This is false as:
+
+- **Without search, discovery degraded.** It guessed page URLs, never found the Summarization page, and told the developer that Deepgram documents summarization "only on the text endpoint." The README repeats this. False:
   `summarize=v2` on `/v1/listen` exists and worked in Condition A.
-- **Summarizer sensitive to input format.** Sending "Speaker 1:" lines to `/v1/read` produced a summary about a dog named Speaker 1. The agent caught it and worked around it.
+
+- **Summarizer sensitive to input format.** Sending "Speaker 1:" lines to `/v1/read` produced a summary about a dog
+  named Speaker 1. The agent caught it and worked around it.
 
 ## Rerun
-The protocol's Condition C (MCP-assisted) was not administered because of a server-side failure, not because of the result. This run is kept as recorded evidence. A rerun was planned once the server recovered. It wasn't run because the server's search was still failing at the last health check (below). Instead, Amendment 2 added Condition C-alt, which tests Deepgram's other documented docs MCP server. See `runs/condition-c-alt.md`.
+The protocol's Condition C (MCP-assisted) was not administered because of a server-side failure, not because of the result. This run is kept as recorded evidence. A rerun was planned once the server recovered. It wasn't run: the server's search was still failing at the last health check (below). Instead, Amendment 2 added Condition C-alt, which tests Deepgram's other documented docs MCP server. See `runs/condition-c-alt.md`.
 
 ### Server health checks
 Each check uses a separate scratch session (not a run folder), the same server URL, and a neutral query ("pricing") so the check can't influence the experiment.
@@ -71,6 +73,7 @@ Each check uses a separate scratch session (not a run folder), the same server U
 | 2026-10-03, 8:17 AM | Failed (during the run) | `Search failed: {"error":"Failed to fetch from FAI chat service"}` |
 | 2026-10-03, 8:45 AM | Failed (health check 1; searchDocs call at 12:45:26 UTC) | `Search failed: {"error":"Failed to fetch from FAI chat service"}` |
 | 2026-10-03, 12:33 PM | Failed (health check 2; searchDocs call at 16:33:43 UTC) | `Search failed: {"error":"Failed to fetch from FAI chat service"}` |
+| 2026-10-04, 12:50 PM | Failed (health check 3; searchDocs call at 16:50:52 UTC) | `Search failed: {"error":"Failed to fetch from FAI chat service"}` |
 
 No check succeeded, so the rerun didn't go ahead.
 
@@ -79,11 +82,16 @@ Opening the server address in a browser (2026-10-03) returns a valid description
 `fern-docs-mcp-server`, version 1.0.0, offering one read-only tool, `searchDocs`, with setup instructions that match the Claude Code command used in this run. So the server itself responds; **its search backend is what fails** ("Failed to fetch from FAI chat service").
 
 - **It looks healthy from the outside.** The server description loads, and `claude mcp list` reported "connected" each time. Neither runs a search, so neither detects this outage. Only a real query does.
-- **It's provided by Deepgram's docs platform.** The server name indicates Fern, the platform behind Deepgram's documentation site. "FAI" is likely Fern's AI search service (an inference from the name). Deepgram's agent docs experience depends on that service.
+
+- **It's provided by Deepgram's docs platform.** The server name indicates Fern, the platform behind Deepgram's documentation site. "FAI" is likely Fern's AI search service (an assumption from the name). Deepgram's agent docs experience depends on that service.
+
 - **The setup was correct.** The server's own Claude Code instructions use the same address and transport as this run, so the configuration wasn't the cause.
 
 ## Notes for the memo
 - **Agents will use an MCP server unprompted.** No hint in the prompt; it went to `searchDocs` first.
+
 - **Agent-facing infrastructure is now production infrastructure.** When the docs MCP server failed, the agent's path to the docs got worse, and it passed a false claim to the developer.
+
 - **Explicit errors work.** This failure was loud, and the agent adapted in seconds.
+
 - **Two runs, two different reasons, same detour.** B (misread response) and C1 (discovery failure) both ended up summarizing via `/v1/read` instead of `/v1/listen`, and both wrote an inaccurate claim about Deepgram into the README.
