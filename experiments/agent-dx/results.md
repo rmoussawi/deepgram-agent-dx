@@ -18,24 +18,36 @@ New to these tables? See [How to read these tables](#how-to-read-these-tables) a
 ## Output comparison: A vs. B (same clip, same model)
 Not scored; recorded because it connects integration choices to what the developer sees.
 
-- **Transcription:** word-for-word the same, including the same errors ("Sashfak," "Sassafrac" for sassafras).  Expected: both used `nova-3`.
+- **Transcription:** word-for-word the same, including the same errors ("Sashfak," "Sassafrac" for sassafras).
+  Expected: both used `nova-3`.
+- **Speaker attribution:** clearly better in B. A put several replies under the wrong speaker: "Oh yeah," "Well,
+  boil it and you drink it," and "Did that help you?" all landed in the wrong turn, and a stray "Back" ended
+  Speaker 0's opening question. B split those correctly, with one mid-sentence split at [01:16].
+  - *Why:* not the diarizer setting, as first assumed. C1 used the same setting as B (`diarize_model=latest`) and
+    produced speaker turns identical to A's. The runs differ in how they built speaker turns: A, C1, and C-alt used
+    Deepgram's utterance segments, while B grouped individual words by speaker and merged one-word flips. That's the
+    likeliest explanation. One clip; a controlled test to separate the two effects is pending.
+- **Summaries:** both short and imprecise. B's summary, made by sending the labelled transcript to `/v1/read`,
+  reversed who asked the opening question. Summary quality is out of scope for scoring.
 
-- **Speaker attribution:** clearly better in B. A (deprecated `diarize=true`, v1 diarizer) put several replies under the wrong speaker: "Oh yeah," "Well, boil it and you drink it," and "Did that help you?" all landed in the wrong turn, and a stray "Back" ended Speaker 0's opening question. B (`diarize_model=latest`, v2 diarizer) split those correctly, with one mid-sentence split at [01:16].
-  - *Caveat:* B's code also absorbs one-word speaker flips. That can't explain most of the difference, since A's errors are mostly multi-word, but the two effects aren't fully separated. One clip only.
+**Why it matters:** the same API output can look better or worse depending on how the agent's code uses it. A developer judging Deepgram's diarization from A's tool would see weaker speaker labels than B's, from the same audio and service.
 
-- **Summaries:** both short and imprecise. B's summary, made by sending the labelled transcript to `/v1/read`, reversed who asked the opening question. Summary quality is out of scope for scoring.
+## Output comparison: C-alt and C1 vs. A (same clip, same model)
+Not scored; recorded for the same reason as above.
 
-**Why it matters:** the developer in Condition A would see weaker speaker labels and could reasonably judge Deepgram's diarization by them, without knowing a better diarizer was one parameter away.
+- **C-alt: identical to A.** Transcript, speaker turns, and summary match Condition A's exactly, line for line, including every misattributed reply and the stray "Back." Both used the deprecated `diarize=true`, `summarize=v2` on `/v1/listen`, and Deepgram's utterance segments for speaker turns.
 
-C1 is shown for completeness but isn't a valid Condition C result: the docs MCP server failed on every call, so the agent fell back to fetching pages directly. See `runs/condition-c1.md`. Condition C was not re-run: the server's search was still failing at the last check (12:50 PM ET on 2026-10-04). Instead, C-alt tested Deepgram's other documented docs MCP server (Amendment 2 in `PROTOCOL.md`). C-alt is reported separately and doesn't replace
-Condition C.
+- **C1: same speaker turns as A.** C1 used the current `diarize_model=latest`, yet its transcript and speaker turns match A's line for line, including the same misattributions. Like A, it built speaker turns from utterance segments. Its summary differs, because it came from `/v1/read`.
+
+- **What this shows:** on this clip, the diarizer setting didn't visibly change the speaker labels. The one run with better labels, B, is also the only one that built speaker turns from individual words. See the A vs. B section.
+
+C1 is shown for completeness but isn't a valid Condition C result: the docs MCP server failed on every call, so the agent fell back to fetching pages directly. See `runs/condition-c1.md`. Condition C was not re-run: the server's search was still failing at the last check (12:50 PM ET on 2026-10-04). Instead, C-alt tested Deepgram's other documented docs MCP server (Amendment 2 in `PROTOCOL.md`). C-alt is reported separately and doesn't replace Condition C.
 
 ## Takeaways
 To be added after Condition C-alt (see Amendment 2 in [`PROTOCOL.md`](PROTOCOL.md)).
 
 ## How to read these tables
-All times come from the Claude Code session logs and are measured from the moment the prompt was submitted.
-Each condition was run once (see Limitations in [`FINDINGS.md`](../../FINDINGS.md)).
+All times come from the Claude Code session logs and are measured from the moment the prompt was submitted. Each condition was run once (see Limitations in [`FINDINGS.md`](../../FINDINGS.md)).
 
 ### Condition 0: Onboarding probe
 The agent got the same task with **no API key**. These fields measure what it did at the step it couldn't complete itself, not the quality of the code.
@@ -70,5 +82,6 @@ The same task and prompt, with a key, under different documentation setups:
 
 - **Diarization:** labeling who spoke when (Speaker 0, Speaker 1, ...).
 
-- **`/v1/listen` and `/v1/read`:** Deepgram's endpoints for audio (transcription, plus features like summarization) and for text analysis (summarizing text you send it).
+- **`/v1/listen` and `/v1/read`:** Deepgram's endpoints for audio (transcription, plus features like
+  summarization) and for text analysis (summarizing text you send it).
 

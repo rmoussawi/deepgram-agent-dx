@@ -13,7 +13,7 @@
 - [x] `DEEPGRAM_API_KEY` exported in this terminal only (log confirms: agent's check returned "yes")
 - [x] Prompt identical to A (no llms.txt line, no mention of MCP)
 - [x] Server added for this folder only (no `--scope project`)
-- [x] One-time browser sign-in completed before the run. The page offered sign-in through a popular email provider or with an email address. Any Google account worked, with no existing Deepgram account needed;  Google asked permission to share basic account information. It took about 22 seconds, and can take a few  seconds if you're already signed in to the provider in the browser.  The Agentic developer tools page doesn't mention that sign-in is required.
+- [x] One-time browser sign-in completed before the run. The page offered sign-in through a popular email provider or with an email address. Any Google account worked, with no existing Deepgram account needed; Google asked permission to share basic account information. It took about 22 seconds, and can take a few seconds if you're already signed in to the provider in the browser. The Agentic developer tools page doesn't mention that sign-in is required.
 
 ### Connection problems before the run (setup, not interventions)
 | Time (UTC) | What happened |
@@ -75,7 +75,8 @@ response = client.listen.v1.media.transcribe_url(
     diarize=True,      # <-- THIS is the feature this recipe demonstrates.
 ```
 
-Across all 13 results for this search, only one came from developers.deepgram.com (the API reference). The Diarization docs page, which says to replace `diarize=true` with `diarize_model`, wasn't among them.
+Across all 13 results for this search, only one came from developers.deepgram.com (the API reference). The
+Diarization docs page, which says to replace `diarize=true` with `diarize_model`, wasn't among them.
 
 **Search 2:** *"How do I use the Deepgram summarize or text intelligence features to get a summary of a prerecorded transcript?"*
 
@@ -101,7 +102,8 @@ Across all 13 results for this search, only one came from developers.deepgram.co
 | | **Score** | **4/5** | |
 
 ## Where it went wrong
-- **The recommended docs server pointed the agent to a deprecated parameter.** Deepgram's own diarization recipe uses `diarize`, and the search never surfaced the Diarization page that explains its replacement. The output shows it: speaker attribution is identical to Condition A's, including the same errors, because both used the older diarizer.
+- **The recommended docs server pointed the agent to a deprecated parameter.** Deepgram's own diarization recipe uses `diarize`, and the search never surfaced the Diarization page that explains its replacement. Its output is identical to Condition A's, including the same speaker errors. C1, which used the current setting, produced the
+  same speaker turns, so on this clip the deprecated parameter didn't visibly change the labels; see the output comparisons in `results.md`.
 
 ## Notes for the memo
 - **The best summarization result, but stale diarization.** Of the three docs-assisted runs, only C-alt found audio summarization on `/v1/listen`, because the recipes show it. But the same recipes carried the deprecated diarization parameter.

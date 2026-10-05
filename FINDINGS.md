@@ -7,7 +7,7 @@ A coding agent built a working Deepgram meeting-summary tool in every condition 
 
 Without docs, the agent relied on prior knowledge and used a deprecated parameter without knowing it. 
 
-With `llms.txt`, it used the current API and produced visibly better speaker labels, but took about twice as long, and it misread an API response and told the developer something false about Deepgram. 
+With `llms.txt`, it used the current diarization setting instead of the deprecated one, but took about twice as long, and it misread an API response and told the developer something false about Deepgram. 
 
 When the docs MCP server's search failed with a clear error, the agent recovered in seconds, but its docs discovery degraded.
 
@@ -41,10 +41,10 @@ In Condition A, the agent consulted no docs and finished in 37 seconds. It worke
 
 *Evidence:* the [Condition A run log](experiments/agent-dx/runs/condition-a.md) ("Discovery": no docs fetched; "Integration quality": the deprecated parameter, scored under item 3); Deepgram's [Diarization page](https://developers.deepgram.com/docs/diarization), which marks `diarize=true` deprecated; and the controlled test in the [Condition B run log](experiments/agent-dx/runs/condition-b.md) ("Where it went wrong"), where requests using `diarize=true` returned no warnings.
 
-### 2. Docs made the agent current, and the developer would see the difference
-With llms.txt (B), the agent read the Diarization page and used `diarize_model=latest`. Same model, same clip: the transcription was word-for-word identical, but speaker attribution was clearly better in B. Several replies that A assigned to the wrong speaker were correct in B. 
+### 2. Docs made the agent current
+With llms.txt (B), the agent read the Diarization page and used the current `diarize_model=latest` instead of the deprecated `diarize=true`.
 
-A developer using A's tool would judge Deepgram's diarization by the older model without knowing a better one was one parameter away. *(One clip; B's code also smooths one-word speaker flips, which can't explain most of the difference.)*
+B's speaker labels were also clearly better than A's on the same clip, but the newer setting doesn't appear to be the reason. C1 used the same setting as B and produced speaker turns identical to A's. The difference most likely comes from how B's code built speaker turns: from individual words, merging one-word speaker flips, rather than from Deepgram's utterance segments. So the agent's own integration choices changed what the developer saw. *(One clip; a controlled test to separate the two effects is pending.)*
 
 **Cost:** roughly double the time (70s vs. 37s; 29s vs. 12s to first call) for four docs fetches.
 
@@ -106,11 +106,11 @@ The two servers also differ in setup. `_mcp/server` needs no authentication; `ka
 *Evidence:* the [friction log](FRICTION_LOG.md) ("Examples: two docs MCP servers": links to each page, both servers' setup commands, and pull request #11 in detail); Deepgram's [Agentic developer tools page](https://developers.deepgram.com/developer-tools/agentic-tools); and the sign-in details in the [Condition C-alt run log](experiments/agent-dx/runs/condition-c-alt.md) ("Setup check").
 
 ### 10. What a docs search returns matters as much as whether it works
-In C-alt, the docs MCP server worked, and the agent used it first. Its two searches returned 28 results, mostly code recipes, examples, and community discussions. For summarization, the official pages appeared near the top, and the agent correctly used audio summarization on `/v1/listen`, which B and C1 missed. For diarization, the top result was Deepgram's own recipe using the deprecated `diarize=true`, and the Diarization page explaining its replacement never appeared. The agent used the deprecated parameter, and its speaker labels matched Condition A's, mistakes included.
+In C-alt, the docs MCP server worked, and the agent used it first. Its two searches returned 28 results, mostly code recipes, examples, and community discussions. For summarization, the official pages appeared near the top, and the agent correctly used audio summarization on `/v1/listen`, which B and C1 missed. For diarization, the top result was Deepgram's own recipe using the deprecated `diarize=true`, and the Diarization page explaining its replacement never appeared. The agent used the deprecated parameter. Its output matched Condition A's exactly, but so did C1's, which used the current setting, so on this clip the deprecated parameter didn't visibly change the speaker labels.
 
 **Docs only make agents current if the content they surface is current.** Recipes are valuable to agents, but they fall behind unless they're updated along with the docs.
 
-*Evidence:* the [Condition C-alt run log](experiments/agent-dx/runs/condition-c-alt.md) ("Search results": the top results for both searches, including the recipe's code; "Integration quality": the deprecated parameter; "Where it went wrong": speaker labels matching Condition A's).
+*Evidence:* the [Condition C-alt run log](experiments/agent-dx/runs/condition-c-alt.md) ("Search results": the top results for both searches, including the recipe's code; "Integration quality": the deprecated parameter); and the output comparisons in [`results.md`](experiments/agent-dx/results.md).
 
 ## What I'd do next
 Give agents one dependable docs MCP server: pick one canonical server and point every page, note, and setup instruction to it, with its authentication documented; point agents to `llms.txt` when search fails; monitor it with real searches instead of connection checks; keep basic search working when the AI backend is down; and keep recipes current when parameters are deprecated. The full plan, plus four other opportunities ranked, is in [`PROPOSAL.md`](PROPOSAL.md).
