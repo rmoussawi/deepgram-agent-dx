@@ -50,7 +50,7 @@ Written and committed before any runs, and kept unchanged, including where they 
 
 **1. Agents build fast from memory, and memory goes stale without anyone noticing.** With no docs, the agent (Claude Code with Claude Sonnet 5.5) built a working tool in 37 seconds from the model's own knowledge, without reading a single page. But it used a deprecated diarization parameter, and the API returned no warning, so neither the agent nor the developer knew.
 
-**2. Docs can make agents current, but they add time and have to be written for how agents read them.** Pointed to `llms.txt`, the agent used the current diarization setting instead of the deprecated one. But reading the docs made the run about twice as long (70 seconds, versus 37 with no docs), and after misreading a condensed version of one page, the agent told the developer a working feature was broken.
+**2. Docs can make agents current, but they add time and have to be written for how agents read them.** Pointed to `llms.txt`, the agent used the current diarization setting instead of the deprecated one. But reading the docs made that run about twice as long (70 seconds, versus 37 with no docs), and after misreading a condensed version of one page, the agent told the developer a working feature was broken.
 
 **3. Today, Deepgram's docs path for agents is fragmented and fragile.** Agents and people are pointed to two different docs MCP servers from two providers. The one the agent-facing docs point to failed at every check for more than a day while appearing healthy, and without it, the agent told the developer a feature didn't exist. The other required a sign-in the setup page doesn't mention, and once connected, it led the agent to one of Deepgram's own recipes using the deprecated parameter.
 

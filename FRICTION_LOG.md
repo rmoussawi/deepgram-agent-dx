@@ -1,6 +1,6 @@
 # Friction Log
 
-Logged in the moment, not after. 
+Entries were logged as they happened, except the section marked "from memory." Each records what happened.
 
 **Severity:** Blocker (could not proceed without help) · Major (wasted 10+ minutes or wrong path) · Minor (annoying, recovered quickly) · Observation (no direct friction, but relevant to agent experience)
 
@@ -32,13 +32,14 @@ Following https://developers.deepgram.com/docs/build-a-voice-agent-python as a h
 ## Examples: two docs MCP servers
 Concrete places where each server is advertised, checked on 2026-10-03.
 
-**1. The agent-facing versions of the docs point to `_mcp/server`.** The Markdown version of each docs page and the `llms.txt` indexes open with a note telling AI clients such as Claude Code and Cursor to connect to the MCP server at `https://developers.deepgram.com/_mcp/server`. Examples:
+**1. The agent-facing versions of the docs point to `_mcp/server`.** The Markdown version of each docs page and the `llms.txt` indexes open with a note telling AI clients such as Claude Code and Cursor to connect to the MCP server at
+`https://developers.deepgram.com/_mcp/server`. Examples:
 - https://developers.deepgram.com/home.md
 - https://developers.deepgram.com/home/llms.txt
 - https://developers.deepgram.com/docs/stt/getting-started/llms.txt
 - https://developers.deepgram.com/docs/flux-tts/overview.md
 
-The regular (HTML) pages carry a different note for AI agents, pointing them to `llms.txt` and the `.md` versions rather than to an MCP server. **The note is in the page's HTML but hidden from view:** a person viewing the page in a browser doesn't see it, but it's in the page source, and it's what an agent reading the HTML page receives. The note begins *"For AI agents: a documentation index is available at the root levelat /llms.txt"* and goes on to explain how to get a page-level index or the Markdown version of any page. It appears on, for example:
+The regular (HTML) pages carry a different note for AI agents, pointing them to `llms.txt` and the `.md` versions rather than to an MCP server. **The note is in the page's HTML but hidden from view:** a person viewing the page in a browser doesn't see it, but it's in the page source, and it's what an agent reading the HTML page receives. The note begins *"For AI agents: a documentation index is available at the root level at /llms.txt"* and goes on to explain how to get a page-level index or the Markdown version of any page. It appears on, for example:
 
 | HTML page | Points AI agents to | MCP server mentioned in the note? |
 |---|---|---|
@@ -78,7 +79,6 @@ It doesn't mention `_mcp/server`, and it doesn't mention that this server requir
 **4. Deepgram's own agent skills have already run into it.** Pull request #11 in Deepgram's public skills repository, *"fix: correct setup-mcp hosted server, document html starter submodules, fix api self-hosted path and regional endpoints"* (https://github.com/deepgram/skills/pull/11). Its description says every claim was verified live on 2026-09-18. The parts relevant here:
 
 - **What the skill said before:** it named `https://api.dx.deepgram.com/kapa/mcp` in six places and presented it as the option for users without an API key.
-
 - **What testing found:**
 
   | Check (from the PR) | Result reported |
@@ -94,7 +94,8 @@ It doesn't mention `_mcp/server`, and it doesn't mention that this server requir
 
 - **A correction during review:** a reviewer's second, adversarial review (by a separate agent) found that `api.dx.deepgram.com/kapa/mcp` **does** accept a Deepgram API key sent as `Authorization: Token <key>`, returning  HTTP 200. The original test had used an unset environment variable, so it sent an empty credential and read the 401 as "key rejected". Per the review, only `deepgram.mcp.kapa.ai` genuinely rejects the key.
 
-- **Follow-up flagged:** the reviewer noted the repo's README still showed a setup command for the kapa address without the authentication header, to be fixed separately.
+- **Follow-up flagged:** the reviewer noted the repo's README still showed a setup command for the kapa address without
+  the authentication header, to be fixed separately.
 
 **What this adds:** this public pull request had identified the authentication requirement and moved the skills to `_mcp/server` about two weeks before this study. On 2026-10-03, the public Agentic developer tools page still listed only the kapa addresses, with no mention of authentication. The review's correction also mirrors finding 3 in this repo: an agent read a failed check as a statement about the product, and an independent check corrected it.
 

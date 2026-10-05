@@ -5,7 +5,7 @@
 ## Problem
 Agents now look for Deepgram's docs through an MCP server, and the path they find is fragmented and fragile.
 
-- **The server agents find was down for more than a day, unnoticed.** Starting at 8:17 AM ET on October 3, 2026, the search on `_mcp/server` failed at every check for more than 28 hours (the last at 12:50 PM ET on October 4), while the server still appeared connected. Without it, the agent guessed pages and told the developer that Deepgram documents summarization only for text, which is false.
+- **The server agents find was down for more than a day, with no visible status notice.** Starting at 8:17 AM ET on October 3, 2026, the search on `_mcp/server` failed at every check for more than 28 hours (the last at 12:50 PM ET on October 4), while the server still appeared connected. Without it, the agent guessed pages and told the developer that Deepgram documents summarization only for text, which is false.
 
 - **Two servers, three pointers.** The Markdown and `llms.txt` versions of the docs point agents to `developers.deepgram.com/_mcp/server`. The Agentic developer tools page points people to `api.dx.deepgram.com/kapa/mcp`, from a different provider. A hidden note on the HTML pages points agents to `llms.txt` instead. A public pull request in Deepgram's skills repository ([#11](https://github.com/deepgram/skills/pull/11), verified on 2026-09-18 and since merged) switched the skills' setup instructions to `developers.deepgram.com/_mcp/server` about two weeks before this study, but the public setup page still lists only `api.dx.deepgram.com/kapa/mcp`.
 
@@ -18,7 +18,7 @@ Deepgram's API worked throughout, so none of this would show up in API metrics.
 
 **Secondary: the developer supervising the agent.** They need the agent's claims about Deepgram to be accurate. They can't tell when an agent's statement came from incomplete docs access, so they take it as fact.
 
-**Internal: Deepgram's docs and developer-experience team.** They need to know when agent-facing services stop working. Today, an outage like this one would likely go unnoticed: the API is healthy, the server responds, and nothing reports an error.
+**Internal: Deepgram's docs and developer-experience team.** They need to know when agent-facing services stop working. Today, an outage like this one is easy to miss from the outside: the API is healthy, the server responds, and nothing reports an error.
 
 ## Proposed solution
 **1. Pick one canonical docs MCP server, and point everything to it.** Update the Agentic developer tools page, the notes in the Markdown and `llms.txt` versions, the hidden note on the HTML pages, and Deepgram's skills and example READMEs so they all name the same server. State on the setup page whether it requires authentication, and how to provide it. If both servers stay, explain when to use each.

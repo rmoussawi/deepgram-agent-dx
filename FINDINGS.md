@@ -7,11 +7,11 @@ A coding agent built a working Deepgram meeting-summary tool in every condition 
 
 Without docs, the agent relied on prior knowledge and used a deprecated parameter without knowing it. 
 
-With `llms.txt`, it used the current diarization setting instead of the deprecated one, but took about twice as long, and it misread an API response and told the developer something false about Deepgram. 
+With `llms.txt`, it used the current diarization setting instead of the deprecated one, but that run took about twice as long, and it misread an API response and told the developer something false about Deepgram. 
 
 When the docs MCP server's search failed with a clear error, the agent recovered in seconds, but its docs discovery degraded.
 
-With Deepgram's other docs MCP server, the agent found the right summarization approach in two searches, but followed one of Deepgram's own code recipes that used the deprecated parameter, ending up exactly where the no-docs baseline did. Across the study, Deepgram's docs gave agents two different MCP servers and three different pointers, and the one agents find first was down for more than a day without anyone noticing.
+With Deepgram's other docs MCP server, the agent found the right summarization approach in two searches, but followed one of Deepgram's own code recipes that used the deprecated parameter, ending up exactly where the no-docs baseline did. Across the study, Deepgram's docs gave agents two different MCP servers and three different pointers, and the one agents find first was down for more than a day with no visible status notice.
 
 ## Results
 | Condition | Success | Wall time | First successful call | Interventions | Deprecated usage | Summarization via | Integration quality |
@@ -27,7 +27,7 @@ Full data: [`experiments/agent-dx/results.md`](experiments/agent-dx/results.md).
 ## Hypotheses
 | # | Hypothesis | Result | Evidence |
 |---|---|---|---|
-| 1 | Docs access reduces time to a working build and errors | **Rejected** | Docs runs were slower (70s, 75s, and 52s vs. 37s). Errors didn't drop: B misread a response and drew a false conclusion. Docs improved *currency* in B, but not in C-alt |
+| 1 | Docs access reduces time to a working build and errors | **Not supported in these runs (one run each)** | Docs runs were slower (70s, 75s, and 52s vs. 37s). Errors didn't drop: B misread a response and drew a false conclusion. Docs improved *currency* in B, but not in C-alt |
 | 2 | Without docs, the agent picks up outdated patterns | **Supported, by a different mechanism** | A used the deprecated `diarize=true` from the model's prior knowledge, with no web search. C-alt used it too, following a Deepgram recipe returned by the docs MCP server |
 | 3 | Without a key, the agent's handoff instructions are incomplete | **Supported, but reframed** | Handoff scored 2/4 (no signup or key-creation steps). More important: the agent didn't stop. It built untested code and deferred verification to the human |
 | 4 | The agent uses a separate LLM for summarization | **Rejected** | Every run, including C-alt, used Deepgram's own summarization. But in A, the agent recommended switching to another LLM for better summaries |
@@ -46,7 +46,7 @@ With llms.txt (B), the agent read the Diarization page and used the current `dia
 
 B's speaker labels were also clearly better than A's on the same clip, but the newer setting doesn't appear to be the reason. C1 used the same setting as B and produced speaker turns identical to A's. The difference most likely comes from how B's code built speaker turns: from individual words, merging one-word speaker flips, rather than from Deepgram's utterance segments. So the agent's own integration choices changed what the developer saw. *(One clip; a controlled test to separate the two effects is pending.)*
 
-**Cost:** roughly double the time (70s vs. 37s; 29s vs. 12s to first call) for four docs fetches.
+**Cost:** in these single runs, roughly double the time (70s vs. 37s; 29s vs. 12s to first call) for four docs fetches.
 
 Not every docs path had this effect: in C-alt, the docs server led the agent to the deprecated parameter (finding 10).
 
@@ -127,6 +127,8 @@ Give agents one dependable docs MCP server: pick one canonical server and point 
 - **My first read of B was wrong.** I initially logged B as a silent API failure, based on the agent's own account. The controlled test showed the agent misread the response. Agent claims need independent checks.
 
 - **Agents read docs through a summarizing fetch tool**, so what they "read" was a condensed version of each page.
+
+- **Timing differences come from single runs.** Agent runs vary, so 37s versus 70s shows a direction, not a measured effect. Repeated runs per condition would be needed to compare speed reliably.
 
 - **Runs happened on different days**, so a docs or API change between runs can't be fully ruled out.
 
