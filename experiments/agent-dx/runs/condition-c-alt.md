@@ -13,7 +13,8 @@
 - [x] `DEEPGRAM_API_KEY` exported in this terminal only (log confirms: agent's check returned "yes")
 - [x] Prompt identical to A (no llms.txt line, no mention of MCP)
 - [x] Server added for this folder only (no `--scope project`)
-- [x] One-time browser sign-in completed before the run. The page offered sign-in through a popular email provider or with an email address. Any Google account worked, with no existing Deepgram account needed; Google asked permission to share basic account information. It took about 22 seconds, and can take a few seconds if you're already signed in to the provider in the browser. The Agentic developer tools page doesn't mention that sign-in is required.
+- [x] One-time browser sign-in completed before the run. The page offered sign-in through a popular email
+  provider or with an email address. Any Google account worked, with no existing Deepgram account needed; Google asked permission to share basic account information. It took about 22 seconds, and can take a few seconds if you're already signed in to the provider in the browser. The Agentic developer tools page doesn't mention that sign-in is required.
 
 ### Connection problems before the run (setup, not interventions)
 | Time (UTC) | What happened |
@@ -43,7 +44,8 @@
 ## Discovery
 - **Did the agent use the MCP server unprompted?** Yes, as its first docs step.
 
-- **What the searches returned:** 28 results across two searches, mostly from GitHub: Deepgram's `recipes` repo, SDK examples, and community discussions. For the diarization search, only one of 13 results came from developers.deepgram.com (the API reference). **The Diarization docs page never appeared,** and no result mentioned `diarize_model` or the deprecation of `diarize=true`.
+- **What the searches returned:** 28 results across two searches, mostly from GitHub: Deepgram's `recipes` repo,
+  SDK examples, and community discussions. For the diarization search, only one of 13 results came from developers.deepgram.com (the API reference). **The Diarization docs page never appeared,** and no result mentioned `diarize_model` or the deprecation of `diarize=true`.
 
 - SDK or raw HTTP? **Official Python SDK** (`deepgram-sdk` 7.12.0), the only build run to use it.
 
@@ -75,8 +77,7 @@ response = client.listen.v1.media.transcribe_url(
     diarize=True,      # <-- THIS is the feature this recipe demonstrates.
 ```
 
-Across all 13 results for this search, only one came from developers.deepgram.com (the API reference). The
-Diarization docs page, which says to replace `diarize=true` with `diarize_model`, wasn't among them.
+Across all 13 results for this search, only one came from developers.deepgram.com (the API reference). The Diarization docs page, which says to replace `diarize=true` with `diarize_model`, wasn't among them.
 
 **Search 2:** *"How do I use the Deepgram summarize or text intelligence features to get a summary of a prerecorded transcript?"*
 
@@ -105,11 +106,12 @@ Diarization docs page, which says to replace `diarize=true` with `diarize_model`
 - **The recommended docs server pointed the agent to a deprecated parameter.** Deepgram's own diarization recipe uses `diarize`, and the search never surfaced the Diarization page that explains its replacement. Its output is identical to Condition A's, including the same speaker errors. C1, which used the current setting, produced the
   same speaker turns, so on this clip the deprecated parameter didn't visibly change the labels; see the output comparisons in `results.md`.
 
-## Notes for the memo
+## Notes for the memo (interpretation)
 - **The best summarization result, but stale diarization.** Of the three docs-assisted runs, only C-alt found audio summarization on `/v1/listen`, because the recipes show it. But the same recipes carried the deprecated diarization parameter.
 
 - **What a docs search indexes matters as much as whether it works.** This server returned mostly code recipes, examples, and forum posts, not docs pages. Those are useful for agents, but they go out of date unless they're maintained alongside the docs.
 
 - **Fastest docs-assisted run.** 52s total, versus 70s (B) and 75s (C1). Two searches replaced several page fetches.
 
-- **Reaching the server took effort.** A browser sign-in the setup page doesn't mention, a connection with no tools, a timeout, then success after a retry.
+- **Reaching the server took effort.** A browser sign-in the setup page doesn't mention, a connection with no
+  tools, a timeout, then success after a retry.

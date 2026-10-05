@@ -3,7 +3,7 @@
 **Status:** For discussion · **Author:** Rami Moussawi · **Evidence:** [findings](FINDINGS.md), [Condition C1](experiments/agent-dx/runs/condition-c1.md), [Condition C-alt](experiments/agent-dx/runs/condition-c-alt.md), [friction log](FRICTION_LOG.md)
 
 ## Problem
-Agents now look for Deepgram's docs through an MCP server, and the path they find is fragmented and fragile.
+When a docs MCP server was configured, the agent used it first. The path agents are pointed to is fragmented and fragile.
 
 - **The server agents find was down for more than a day, with no visible status notice.** Starting at 8:17 AM ET on October 3, 2026, the search on `_mcp/server` failed at every check for more than 28 hours (the last at 12:50 PM ET on October 4), while the server still appeared connected. Without it, the agent guessed pages and told the developer that Deepgram documents summarization only for text, which is false.
 
@@ -81,7 +81,7 @@ This proposal intentionally doesn't cover the items below. That doesn't mean the
 
 - **Basic keyword results are weaker.** Agents might rely on lower-quality results without knowing it. Labeling them as limited (see requirements) reduces this risk.
 
-- **Choosing one server means accepting its weaknesses until they're fixed.** `_mcp/server` needs no authentication, which suits unattended agents, but its search failed for hours. `kapa/mcp` requires authentication, which likely helps manage abuse and cost, and it searches recipes and discussions as well as docs. Neither is clearly better today.
+- **Choosing one server means accepting its weaknesses until they're fixed.** `_mcp/server` needs no authentication, which suits unattended agents, but its search failed for hours. `kapa/mcp` requires authentication, and it searches recipes and discussions as well as docs. Neither is clearly better today.
 
 - **Existing setups could break.** Developers and agents already configured with the server that isn't chosen need a migration path, such as keeping the old address working with a notice. Deepgram's skills repository already documents a naming conflict that users following older setup instructions run into.
 

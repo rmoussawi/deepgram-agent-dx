@@ -50,13 +50,18 @@ and that likely shaped its choice of raw HTTP over the SDK. Keep the environment
 | | **Score** | **4/5** | |
 
 ## Where it went wrong
-One integration issue: the deprecated `diarize=true` parameter (scored under item 3). Other quality issues were in the output, not the code: "Sassafras" was transcribed as "Sashfak," which carried into the summary, and a few short replies were assigned to the wrong speaker.
+One integration issue: the deprecated `diarize=true` parameter (scored under item 3). Other quality issues were in the output, not the code: "Sassafras" was transcribed
+as "Sashfak," which carried into the summary, and a few short replies were assigned to the wrong speaker.
 Summary prose quality is out of scope for scoring (see protocol).
 
-## Notes for the memo
+## Notes for the memo (interpretation)
 - **The docs were never consulted.** The agent completed the task in 37 seconds from prior knowledge alone, and it worked. But it used a deprecated parameter (`diarize=true`) without knowing it. Fast and working is not the same as current: prior knowledge goes stale silently.
+
 - **It verified before building.** It tested the API with `curl` first, then wrote the tool. The opposite of Condition 0's defer behavior, because a key was available.
+
 - **Answers the Condition 0 compatibility question:** `nova-3` with `summarize=v2` returned a successful summary.
   The Summarization page's "Nova" wording is a docs clarity issue, not a product limitation.
+
 - **The agent evaluated the product for the developer.** It called Deepgram's summarizer "fairly literal" and suggested sending the transcript to Claude instead. Agents don't just integrate; they recommend, and can steer developers away from a feature.
+
 - **No SDK.** With the SDK absent and `requests` present, it went straight to the REST API. The SDK was neither needed nor discovered.

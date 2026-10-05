@@ -46,9 +46,9 @@ Written and committed before any runs, and kept unchanged, including where they 
 | `01-agent-loop/`        | Minimal agent loop in plain Python, built to understand the mechanics                                    | Planned                                                                                                    |
 
 ## Key findings
-**For agents, the common path is decided by what the model already knows. Deepgram's docs matter most wherever the product has changed since the model learned it. To help, they have to be both reachable and current.**
+*Overall interpretation, not tested directly:* **For agents, the common path is decided by what the model already knows. Deepgram's docs matter most wherever the product has changed since the model learned it. To help, they have to be both reachable and current.**
 
-**1. Agents build fast from memory, and memory goes stale without anyone noticing.** With no docs, the agent (Claude Code with Claude Sonnet 5.5) built a working tool in 37 seconds from the model's own knowledge, without reading a single page. But it used a deprecated diarization parameter, and the API returned no warning, so neither the agent nor the developer knew.
+**1. Without docs, the agent built fast, but used a deprecated parameter, and nothing flagged it.** With no docs, the agent (Claude Code with Claude Sonnet 5.5) built a working tool in 37 seconds without fetching any documentation. But it used a deprecated diarization parameter, and the API returned no warning, so neither the agent nor the developer knew.
 
 **2. Docs can make agents current, but they add time and have to be written for how agents read them.** Pointed to `llms.txt`, the agent used the current diarization setting instead of the deprecated one. But reading the docs made that run about twice as long (70 seconds, versus 37 with no docs), and after misreading a condensed version of one page, the agent told the developer a working feature was broken.
 

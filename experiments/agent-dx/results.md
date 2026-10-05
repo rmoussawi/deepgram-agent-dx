@@ -20,15 +20,12 @@ Not scored; recorded because it connects integration choices to what the develop
 
 - **Transcription:** word-for-word the same, including the same errors ("Sashfak," "Sassafrac" for sassafras).
   Expected: both used `nova-3`.
-- **Speaker attribution:** clearly better in B. A put several replies under the wrong speaker: "Oh yeah," "Well,
-  boil it and you drink it," and "Did that help you?" all landed in the wrong turn, and a stray "Back" ended
-  Speaker 0's opening question. B split those correctly, with one mid-sentence split at [01:16].
+
+- **Speaker attribution:** clearly better in B. A put several replies under the wrong speaker: "Oh yeah," "Well, boil it and you drink it," and "Did that help you?" all landed in the wrong turn, and a stray "Back" ended Speaker 0's opening question. B split those correctly, with one mid-sentence split at [01:16].
   - *Why:* not the diarizer setting, as first assumed. C1 used the same setting as B (`diarize_model=latest`) and
-    produced speaker turns identical to A's. The runs differ in how they built speaker turns: A, C1, and C-alt used
-    Deepgram's utterance segments, while B grouped individual words by speaker and merged one-word flips. That's the
-    likeliest explanation. One clip; a controlled test to separate the two effects is pending.
-- **Summaries:** both short and imprecise. B's summary, made by sending the labelled transcript to `/v1/read`,
-  reversed who asked the opening question. Summary quality is out of scope for scoring.
+    produced speaker turns identical to A's. The runs differ in how they built speaker turns: A, C1, and C-alt used Deepgram's utterance segments, while B grouped individual words by speaker and merged one-word flips. Whether that difference caused the different labels wasn't tested. One clip.
+
+- **Summaries:** both short and imprecise. B's summary, made by sending the labelled transcript to `/v1/read`, reversed who asked the opening question. Summary quality is out of scope for scoring.
 
 **Why it matters:** the same API output can look better or worse depending on how the agent's code uses it. A developer judging Deepgram's diarization from A's tool would see weaker speaker labels than B's, from the same audio and service.
 
@@ -47,7 +44,8 @@ C1 is shown for completeness but isn't a valid Condition C result: the docs MCP 
 To be added after Condition C-alt (see Amendment 2 in [`PROTOCOL.md`](PROTOCOL.md)).
 
 ## How to read these tables
-All times come from the Claude Code session logs and are measured from the moment the prompt was submitted. Each condition was run once (see Limitations in [`FINDINGS.md`](../../FINDINGS.md)).
+All times come from the Claude Code session logs and are measured from the moment the prompt was submitted.
+Each condition was run once (see Limitations in [`FINDINGS.md`](../../FINDINGS.md)).
 
 ### Condition 0: Onboarding probe
 The agent got the same task with **no API key**. These fields measure what it did at the step it couldn't complete itself, not the quality of the code.
