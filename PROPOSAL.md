@@ -68,6 +68,8 @@ This proposal intentionally doesn't cover the items below. That doesn't mean the
 
 **Supporting: pointers to a non-canonical server.** The number of places (the setup page, the Markdown and `llms.txt` notes, the hidden note on HTML pages, the skills, and example READMEs) that name a docs MCP server other than the canonical one. Target: zero, checked automatically.
 
+**Supporting: share of agent choices.** How often agents choose Deepgram when a task doesn't name a provider, measured with automated test runs across several agents and models. Baseline from this repo: 0 of 5 runs, with one agent and one model (see the [selection probe](experiments/agent-dx/runs/selection-probe.md)). Target: to be set once there's a baseline across several agents. The fixes in this proposal may not move it on their own: in those runs, the agent consulted no docs before choosing. It's tracked here so the docs work is judged against the outcome that matters for growth.
+
 **Guardrail: false alerts.** An alert is false when it fires but search is actually working, for example because of a brief network glitch at the monitoring location. Target: no more than one per week. If alerts fire too often for no reason, people start ignoring them, and a real outage gets missed.
 
 **Validation:**
