@@ -20,12 +20,10 @@ Not scored; recorded because it connects integration choices to what the develop
 
 - **Transcription:** word-for-word the same, including the same errors ("Sashfak," "Sassafrac" for sassafras).
   Expected: both used `nova-3`.
-
 - **Speaker attribution:** clearly better in B. A put several replies under the wrong speaker: "Oh yeah," "Well, boil it and you drink it," and "Did that help you?" all landed in the wrong turn, and a stray "Back" ended Speaker 0's opening question. B split those correctly, with one mid-sentence split at [01:16].
-  - *Why:* not the diarizer setting, as first assumed. C1 used the same setting as B (`diarize_model=latest`) and
-    produced speaker turns identical to A's. The runs differ in how they built speaker turns: A, C1, and C-alt used Deepgram's utterance segments, while B grouped individual words by speaker and merged one-word flips. Whether that difference caused the different labels wasn't tested. One clip.
-
-- **Summaries:** both short and imprecise. B's summary, made by sending the labelled transcript to `/v1/read`, reversed who asked the opening question. Summary quality is out of scope for scoring.
+  - *Why:* not the diarizer setting, as first assumed. C1 used the same setting as B (`diarize_model=latest`) and produced speaker turns identical to A's. The runs differ in how they built speaker turns: A, C1, and C-alt used Deepgram's utterance segments, while B grouped individual words by speaker and merged one-word flips. Whether that difference caused the different labels wasn't tested. One clip.
+- **Summaries:** both short and imprecise. B's summary, made by sending the labelled transcript to `/v1/read`,
+  reversed who asked the opening question. Summary quality is out of scope for scoring.
 
 **Why it matters:** the same API output can look better or worse depending on how the agent's code uses it. A developer judging Deepgram's diarization from A's tool would see weaker speaker labels than B's, from the same audio and service.
 
@@ -33,15 +31,40 @@ Not scored; recorded because it connects integration choices to what the develop
 Not scored; recorded for the same reason as above.
 
 - **C-alt: identical to A.** Transcript, speaker turns, and summary match Condition A's exactly, line for line, including every misattributed reply and the stray "Back." Both used the deprecated `diarize=true`, `summarize=v2` on `/v1/listen`, and Deepgram's utterance segments for speaker turns.
-
 - **C1: same speaker turns as A.** C1 used the current `diarize_model=latest`, yet its transcript and speaker turns match A's line for line, including the same misattributions. Like A, it built speaker turns from utterance segments. Its summary differs, because it came from `/v1/read`.
-
 - **What this shows:** on this clip, the diarizer setting didn't visibly change the speaker labels. The one run with better labels, B, is also the only one that built speaker turns from individual words. See the A vs. B section.
 
-C1 is shown for completeness but isn't a valid Condition C result: the docs MCP server failed on every call, so the agent fell back to fetching pages directly. See `runs/condition-c1.md`. Condition C was not re-run: the server's search was still failing at the last check (12:50 PM ET on 2026-10-04). Instead, C-alt tested Deepgram's other documented docs MCP server (Amendment 2 in `PROTOCOL.md`). C-alt is reported separately and doesn't replace Condition C.
+C1 is shown for completeness but isn't a valid Condition C result: the docs MCP server failed on every call, so the agent fell back to fetching pages directly. See `runs/condition-c1.md`. Condition C was not re-run: the server's search was still failing at the last check (12:50 PM ET on 2026-10-04). Instead, C-alt tested Deepgram's other documented docs MCP server (Amendment 2 in `PROTOCOL.md`). C-alt is reported separately and doesn't replace
+Condition C.
+
+## Repeat runs: Condition A (Amendment 3)
+The same setup as Condition A, run four more times. Details: [`runs/condition-a-repeats.md`](runs/condition-a-repeats.md).
+
+| Run | Docs consulted | Diarization setting | Summarization | First successful call | Wall time | Interventions |
+| --- | --- | --- | --- | --- | --- | --- |
+| A (original) | None | `diarize=true` | `summarize=v2` on `/listen` | 12s | 37s | 0 |
+| A2 | None | `diarize=true` | `summarize=v2` on `/listen` | 16s | 55s | 0 |
+| A3 | None | `diarize=true` | `summarize=v2` on `/listen` | 11s | 32s | 0 |
+| A4 | None | `diarize=true` | `summarize=v2` on `/listen` | 16s | 26s | 0 |
+| A5 | None | `diarize=true` | `summarize=v2` on `/listen` | 12s | 34s | 0 |
+
+5 of 5 consulted no docs and used `diarize=true`. Wall time ranged from 26 to 55 seconds (median 34).
+
+## Selection probe (Amendment 3)
+The task without naming a provider, with the Deepgram, Gemini, OpenAI, and Anthropic keys unset. Details: [`runs/selection-probe.md`](runs/selection-probe.md).
+
+| Run | Speech-to-text and speaker labels | Summary | Docs consulted | Time |
+| --- | --- | --- | --- | --- |
+| S1 | AssemblyAI | Claude | None | 21s |
+| S2 | AssemblyAI | Claude | None | 24s |
+| S3 | AssemblyAI | Claude | None | 27s |
+| S4 | AssemblyAI | Claude | None | 32s |
+| S5 | AssemblyAI | Claude | None | 26s |
+
+No run chose Deepgram. In all five, the agent's first command searched the environment for variable names that included `DEEPGRAM`.
 
 ## Takeaways
-To be added after Condition C-alt (see Amendment 2 in [`PROTOCOL.md`](PROTOCOL.md)).
+See [`FINDINGS.md`](../../FINDINGS.md) for the analysis.
 
 ## How to read these tables
 All times come from the Claude Code session logs and are measured from the moment the prompt was submitted.
@@ -74,12 +97,10 @@ The same task and prompt, with a key, under different documentation setups:
 | Integration quality (x/5) | Whether the agent used Deepgram correctly, scored with the five-point checklist in [`PROTOCOL.md`](PROTOCOL.md): current model, working speaker labels, current API patterns, Deepgram's own features, and a clear missing-key error. It does not grade how good the summary reads | A: 4/5, losing a point for the deprecated diarization parameter |
 
 ### Terms used in the tables
-- **Not administered:** the condition couldn't be applied as designed, so the run isn't a valid result for it. C1 is marked this way because the docs MCP server was down for every call.
-
+- **Not administered:** the condition couldn't be applied as designed, so the run isn't a valid result for it.
+  C1 is marked this way because the docs MCP server was down for every call.
 - **Misread response:** the API returned what was requested, but the agent looked in the wrong place and concluded it was missing. Example: in B, the summary was under `results.summary`; the agent checked the top level.
-
 - **Diarization:** labeling who spoke when (Speaker 0, Speaker 1, ...).
-
 - **`/v1/listen` and `/v1/read`:** Deepgram's endpoints for audio (transcription, plus features like
   summarization) and for text analysis (summarizing text you send it).
 
