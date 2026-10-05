@@ -2,10 +2,12 @@
 
 > **Status: final.** Covers Conditions 0, A, B, C1, and C-alt. Condition C (the docs MCP server advertised in the agent-facing docs) could not be administered: its search was down throughout. C-alt tested Deepgram's other documented docs MCP server instead (Amendment 2).
 
+Each finding states what was observed. Anything marked *Interpretation* is a hypothesis that wasn't tested. For observations only, see [`OBSERVATIONS.md`](OBSERVATIONS.md).
+
 ## Summary
 A coding agent built a working Deepgram meeting-summary tool in every condition with a key, with zero human interventions, in 37 to 75 seconds. The interesting differences weren't in whether it worked, but in **how current, how correct, and how honest the result was.** 
 
-Without docs, the agent relied on prior knowledge and used a deprecated parameter without knowing it. 
+Without docs, the agent fetched no documentation and used a deprecated parameter; nothing in the API response flagged it. 
 
 With `llms.txt`, it used the current diarization setting instead of the deprecated one, but that run took about twice as long, and it misread an API response and told the developer something false about Deepgram. 
 
@@ -34,17 +36,21 @@ Full data: [`experiments/agent-dx/results.md`](experiments/agent-dx/results.md).
 
 ## Key findings
 
-### 1. Prior knowledge goes stale silently
-In Condition A, the agent consulted no docs and finished in 37 seconds. It worked, but it used `diarize=true`, which Deepgram's Diarization page marks deprecated in favor of `diarize_model`. Nothing told the agent or the developer: in a later controlled test, requests using `diarize=true` returned no warnings. 
+### 1. Without docs, the agent used a deprecated parameter, and nothing flagged it
+In Condition A, the agent consulted no docs and finished in 37 seconds. It worked, but it used `diarize=true`, which Deepgram's Diarization page marks deprecated in favor of `diarize_model`. Nothing told the agent or the developer: in a later controlled test, requests using `diarize=true` returned no warnings. The agents in Condition 0 and C-alt also used `diarize=true`.
 
-**Fast and working is not the same as current.** For a well-known API, the agent experience is set by the model's training data first, and docs only matter if the agent decides to look.
+**Fast and working is not the same as current.**
 
-*Evidence:* the [Condition A run log](experiments/agent-dx/runs/condition-a.md) ("Discovery": no docs fetched; "Integration quality": the deprecated parameter, scored under item 3); Deepgram's [Diarization page](https://developers.deepgram.com/docs/diarization), which marks `diarize=true` deprecated; and the controlled test in the [Condition B run log](experiments/agent-dx/runs/condition-b.md) ("Where it went wrong"), where requests using `diarize=true` returned no warnings.
+*Interpretation:* for a well-known API, what the agent does is shaped first by what the model already knows, and docs only matter if the agent decides to look.
 
-### 2. Docs made the agent current
+*Evidence:* the [Condition A run log](experiments/agent-dx/runs/condition-a.md) ("Discovery": no docs fetched; "Integration quality": the deprecated parameter, scored under item 3); Deepgram's [Diarization page](https://developers.deepgram.com/docs/diarization), which marks `diarize=true` deprecated; and the controlled test in the [Condition B run log](experiments/agent-dx/runs/condition-b.md) ("Where it went wrong"), where requests using `diarize=true` returned no warnings; and the [Condition 0](experiments/agent-dx/runs/condition-0.md) and [Condition C-alt](experiments/agent-dx/runs/condition-c-alt.md) run logs, which show the same parameter.
+
+### 2. With `llms.txt`, the agent used the current diarization setting
 With llms.txt (B), the agent read the Diarization page and used the current `diarize_model=latest` instead of the deprecated `diarize=true`.
 
-B's speaker labels were also clearly better than A's on the same clip, but the newer setting doesn't appear to be the reason. C1 used the same setting as B and produced speaker turns identical to A's. The difference most likely comes from how B's code built speaker turns: from individual words, merging one-word speaker flips, rather than from Deepgram's utterance segments. So the agent's own integration choices changed what the developer saw. *(One clip; a controlled test to separate the two effects is pending.)*
+B's speaker labels also differed from A's on the same clip: several replies that A assigned to the wrong speaker were assigned correctly in B. C1 used the same setting as B and produced speaker turns identical to A's. B was also the only run that built speaker turns from individual words, merging one-word speaker flips, rather than from Deepgram's utterance segments. What caused the difference wasn't tested. *(One clip.)*
+
+*Interpretation:* how an agent's code uses the API response may change what a developer sees, independently of the API settings.
 
 **Cost:** in these single runs, roughly double the time (70s vs. 37s; 29s vs. 12s to first call) for four docs fetches.
 
@@ -53,24 +59,26 @@ Not every docs path had this effect: in C-alt, the docs server led the agent to 
 *Evidence:* the [Condition B run log](experiments/agent-dx/runs/condition-b.md) ("Discovery": the pages fetched and the diarizer chosen; "Timeline": each step with timestamps); the side-by-side transcripts in [`results.md`](experiments/agent-dx/results.md) ("Output comparison: A vs. B"); and the timings in the results table above.
 
 ### 3. A misread response became a false claim about the product
-In B, the agent checked for the summary at the top level of the response. Deepgram returns it under `results.summary`, and the response metadata even showed summarization had run. The agent concluded summarization doesn't work with nova-3, built a workaround through `/v1/read`, and **wrote the false claim into the README.**
+In B, the agent's check read `summary` from the top level of the response and got nothing. Deepgram returns it under `results.summary`, and the response metadata included a `summary_info` field. The agent then built a workaround through `/v1/read`, and **the README it wrote states that `summarize` on `/listen` "returned no summary with nova-3 in testing."**
 
-A controlled test confirmed the API was fine: four requests varying the diarizer and `language` setting, including B's exact settings, all returned a summary. 
+A controlled test returned a summary for all four requests, varying the diarizer and `language` settings, including B's exact settings.
 
-The page itself is correct: its response example shows `summary` inside `results`. But the agent read a condensed version of the page that kept only "same level as `channels`" and dropped the example. Docs are increasingly read through summaries like this, so exact paths need to be in the prose, not only in examples. 
+The page's response example shows `summary` inside `results`. The condensed version of the page returned to the agent by its fetch tool said the summary sits "at the same level as `channels`" and did not include the example.
 
-**When agents misread docs, developers inherit the mistake as a statement about the product.**
+**In this run, the developer received a README stating that a working feature doesn't work.**
+
+*Interpretation:* when agents misread docs, developers may take the mistake as a statement about the product. Stating exact paths in the text, not only in examples, may reduce this.
 
 *Evidence:* the [Condition B run log](experiments/agent-dx/runs/condition-b.md) ("Timeline": the agent checks the top level of the response; "Where it went wrong": the four-request controlled test); Deepgram's [Summarization page](https://developers.deepgram.com/docs/summarization), whose response example shows `summary` inside `results`; and the Condition B entry in the [friction log](FRICTION_LOG.md).
 
-### 4. Loud errors work; agents recover
+### 4. In C1, the agent recovered from a clear error within seconds
 In C1, the docs MCP server's search tool returned an explicit error ("Failed to fetch from FAI chat service"). The agent recognized the outage within a second and switched to fetching pages directly. 
 
 A clear error was handled well; the cost of the outage showed up later, in what the agent couldn't find (finding 5).
 
 *Evidence:* the [Condition C1 run log](experiments/agent-dx/runs/condition-c1.md) ("Timeline": both searches failed at 12:17:27 UTC with the error above, and the agent was fetching pages directly five seconds later).
 
-### 5. Agent-facing infrastructure is now production infrastructure
+### 5. The docs MCP server's search failed at every check for more than a day, while the server appeared healthy
 With no hint in the prompt, the C1 agent went to the docs MCP server first. Its search failed at every check from 8:17 AM ET on October 3 to 12:50 PM ET on October 4, more than 28 hours. 
 
 The outage was hard to see from the outside: the server's address responded normally, and Claude Code reported it as connected. Only an actual search showed that its search backend was failing. The server is provided by Deepgram's docs platform, so this part of the agent experience depends on a vendor's service.
@@ -79,7 +87,7 @@ Without search, the agent fetched three pages by guessing their addresses: the M
 
 *Evidence:* the [Condition C1 run log](experiments/agent-dx/runs/condition-c1.md) ("Timeline" and "Discovery": the pages fetched; "Where it went wrong": the agent's final message; "Server health checks": every check from October 3 to 4; "Where the failure is": the server responding while its search failed); and the [Condition A run log](experiments/agent-dx/runs/condition-a.md) for the working audio summary.
 
-### 6. Agents defer when they can't verify
+### 6. In Condition 0, the agent built the tool before checking for a key
 Without a key (Condition 0), the agent didn't stop to ask. It built the full tool in 34 seconds, checked for the key only at the very end, and handed verification to the human. It was honest about what it hadn't tested and never faked a result. But nothing let it confirm its integration before a human signed up and created a key.
 
 *Evidence:* the [Condition 0 run log](experiments/agent-dx/runs/condition-0.md) ("What the agent did": the key check was its final command; "Its instructions to the human" and "Handoff quality": the 2/4 score).
@@ -89,14 +97,14 @@ In Condition 0, the agent couldn't confirm whether nova-3 supports summarization
 
 In B, the agent asked the Models page the same question and got no answer. Code examples also disagree by language (JavaScript and Java use `nova-3`; Python and Go use `nova-2`).
 
-*Evidence:* the [Condition 0 run log](experiments/agent-dx/runs/condition-0.md) ("Notes for the memo"); the [Condition B run log](experiments/agent-dx/runs/condition-b.md) ("Where it went wrong"); and three entries in the [friction log](FRICTION_LOG.md) on the "Nova" wording, the SDK type signature, and the code examples on the [Audio Intelligence page](https://developers.deepgram.com/docs/audio-intelligence).
+*Evidence:* the [Condition 0 run log](experiments/agent-dx/runs/condition-0.md) ("Notes for the memo (interpretation)"); the [Condition B run log](experiments/agent-dx/runs/condition-b.md) ("Where it went wrong"); and three entries in the [friction log](FRICTION_LOG.md) on the "Nova" wording, the SDK type signature, and the code examples on the [Audio Intelligence page](https://developers.deepgram.com/docs/audio-intelligence).
 
-### 8. Agents evaluate products, not just integrate them
+### 8. In A, the agent judged a Deepgram feature and suggested an alternative
 In A, the agent called Deepgram's summarizer "fairly literal" and suggested sending the transcript to another LLM instead. 
 
-Agents act as reviewers and advisors to developers, and can steer them away from a feature.
+*Interpretation:* agents may act as reviewers and advisors to developers, and could steer them away from a feature.
 
-*Evidence:* the agent's final message, recorded in the [Condition A run log](experiments/agent-dx/runs/condition-a.md) ("Notes for the memo").
+*Evidence:* the agent's final message, recorded in the [Condition A run log](experiments/agent-dx/runs/condition-a.md) ("Notes for the memo (interpretation)").
 
 ### 9. Agents and people are sent to different docs servers
 Deepgram advertises two docs MCP servers from two providers, plus a third pointer. The Markdown and `llms.txt` versions of the docs point agents to `_mcp/server`. The Agentic developer tools page lists only `kapa/mcp`. A note hidden in the HTML pages points agents to `llms.txt`. The Home page shows it most clearly: its HTML version links people to the kapa server, while its Markdown version tells agents to use `_mcp/server`.
@@ -105,10 +113,10 @@ The two servers also differ in setup. `_mcp/server` needs no authentication; `ka
 
 *Evidence:* the [friction log](FRICTION_LOG.md) ("Examples: two docs MCP servers": links to each page, both servers' setup commands, and pull request #11 in detail); Deepgram's [Agentic developer tools page](https://developers.deepgram.com/developer-tools/agentic-tools); and the sign-in details in the [Condition C-alt run log](experiments/agent-dx/runs/condition-c-alt.md) ("Setup check").
 
-### 10. What a docs search returns matters as much as whether it works
+### 10. The working docs search returned a recipe with the deprecated parameter
 In C-alt, the docs MCP server worked, and the agent used it first. Its two searches returned 28 results, mostly code recipes, examples, and community discussions. For summarization, the official pages appeared near the top, and the agent correctly used audio summarization on `/v1/listen`, which B and C1 missed. For diarization, the top result was Deepgram's own recipe using the deprecated `diarize=true`, and the Diarization page explaining its replacement never appeared. The agent used the deprecated parameter. Its output matched Condition A's exactly, but so did C1's, which used the current setting, so on this clip the deprecated parameter didn't visibly change the speaker labels.
 
-**Docs only make agents current if the content they surface is current.** Recipes are valuable to agents, but they fall behind unless they're updated along with the docs.
+*Interpretation:* docs only make agents current if the content they surface is current. Recipes may fall behind unless they're updated along with the docs.
 
 *Evidence:* the [Condition C-alt run log](experiments/agent-dx/runs/condition-c-alt.md) ("Search results": the top results for both searches, including the recipe's code; "Integration quality": the deprecated parameter); and the output comparisons in [`results.md`](experiments/agent-dx/results.md).
 
