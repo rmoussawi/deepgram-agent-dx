@@ -7,7 +7,7 @@ I started my career as an Android and iOS developer, writing the code myself. To
 
 That changes who a developer platform is really serving. Increasingly, the first "developer" to try an API isn't a person but a coding agent. If the agent can't discover, integrate, and correctly use a product, the person may never get to evaluate it. And if the agent integrates it poorly, they'll judge the product by a worse version of itself.
 
-My first job was measuring how competing networks actually performed for the people using them. This repo applies the same approach to a new kind of user. I give Claude Code a simple task (building a meeting-summary tool with Deepgram, a voice AI platform) under different documentation setups, and measure how far it gets on its own, how correctly it uses the platform, and what helps. A separate probe tests what the agent does when it has no API key. 
+My first job was measuring how competing networks actually performed for the people using them. This repo applies the same approach to a new kind of user. I give Claude Code a simple task (building a meeting-summary tool with Deepgram, a voice AI platform) under different documentation setups, and measure how far it gets on its own, how correctly it uses the platform, and what helps. A separate probe tests what the agent does when it has no API key, and another leaves the provider unnamed, to see which one the agent picks. 
 
 For contrast, the friction log also includes a short account of my own experience as a human developer following one of Deepgram's tutorials. It points to a different kind of friction: the agents struggled with what was current and correct, while I struggled with what to expect and what to do next.
 
@@ -39,7 +39,7 @@ Written and committed before any runs, and kept unchanged, including where they 
 ## What's here
 | Path                    | What it is                                                                                               | Status                                                                                                     |
 | ----------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `experiments/agent-dx/` | Protocol, run logs, and results for an onboarding probe plus documentation conditions A, B, C, and C-alt | Complete. Condition C not administered (docs search outage); C-alt tested Deepgram's other docs MCP server |
+| `experiments/agent-dx/` | Protocol, run logs, and results for an onboarding probe, documentation conditions A, B, C, and C-alt, four repeat runs of A, and a provider selection probe | Complete. Condition C not administered (docs search outage); C-alt tested Deepgram's other docs MCP server |
 | `FRICTION_LOG.md`       | Timestamped friction points, from me as a human and from the agent                                       | Ongoing                                                                                                    |
 | `FINDINGS.md`           | Analysis of the results                                                                                  | Final                                                                                                      |
 | `PROPOSAL.md`           | One-page PRD for the fix the evidence best supports                                                      | For discussion                                                                                             |
@@ -48,15 +48,17 @@ Written and committed before any runs, and kept unchanged, including where they 
 ## Key findings
 *Overall interpretation, not tested directly:* **For agents, the common path is decided by what the model already knows. Deepgram's docs matter most wherever the product has changed since the model learned it. To help, they have to be both reachable and current.**
 
-**1. Without docs, the agent built fast, but used a deprecated parameter, and nothing flagged it.** With no docs, the agent (Claude Code with Claude Sonnet 5.5) built a working tool in 37 seconds without fetching any documentation. But it used a deprecated diarization parameter, and the API returned no warning, so neither the agent nor the developer knew.
+**1. Without docs, the agent built fast, but used a deprecated parameter, and nothing flagged it.** With no docs, the agent (Claude Code with Claude Sonnet 5.5) built a working tool in 37 seconds without fetching any documentation. But it used a deprecated diarization parameter, and the API returned no warning, so neither the agent nor the developer knew. In four repeat runs, it again fetched no docs and used the same deprecated parameter every time.
 
 **2. Docs can make agents current, but they add time and have to be written for how agents read them.** Pointed to `llms.txt`, the agent used the current diarization setting instead of the deprecated one. But reading the docs made that run about twice as long (70 seconds, versus 37 with no docs), and after misreading a condensed version of one page, the agent told the developer a working feature was broken.
 
 **3. Today, Deepgram's docs path for agents is fragmented and fragile.** Agents and people are pointed to two different docs MCP servers from two providers. The one the agent-facing docs point to failed at every check for more than a day while appearing healthy, and without it, the agent told the developer a feature didn't exist. The other required a sign-in the setup page doesn't mention, and once connected, it led the agent to one of Deepgram's own recipes using the deprecated parameter.
 
-**Recommendation: give agents one dependable docs MCP server.** That means one canonical server advertised everywhere, with its authentication documented; automated test searches on a regular schedule, since a basic connection check showed the server as healthy while every search failed; a fallback to `llms.txt` when search fails; and recipes kept current. See [`PROPOSAL.md`](PROPOSAL.md).
+**4. With no provider named, the agent chose AssemblyAI in 5 of 5 runs.** Asked to "use whichever speech-to-text service you think is best," it chose AssemblyAI for transcription and speaker labels, and Claude for the summary, every time, without consulting any docs. In every run, its first command searched for a `DEEPGRAM` environment variable; Deepgram was never chosen.
 
-Full analysis, all ten findings, and limitations: [`FINDINGS.md`](FINDINGS.md). Data: [`results.md`](experiments/agent-dx/results.md).
+**Recommendation: give agents one dependable docs MCP server.** That means one canonical server advertised everywhere, with its authentication documented; automated test searches on a regular schedule, since a basic connection check showed the server as healthy while every search failed; a fallback to `llms.txt` when search fails; and recipes kept current. Alongside it, measure share of agent choices, since the agent picked another provider in every run without a named provider. See [`PROPOSAL.md`](PROPOSAL.md).
+
+Full analysis, all eleven findings, and limitations: [`FINDINGS.md`](FINDINGS.md). Data: [`results.md`](experiments/agent-dx/results.md).
 
 ## Reproduce it
 See `experiments/agent-dx/PROTOCOL.md` for the exact prompt, conditions, and rules.
